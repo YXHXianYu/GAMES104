@@ -1,84 +1,93 @@
-# Pilot Engine
+# YXH_XianYu's Color Grading
 
-<p align="center">
-  <a href="https://games104.boomingtech.com">
-    <img src="engine/source/editor/resource/PilotEngine.png" width="400" alt="Pilot Engine logo">
-  </a>
-</p>
+## 1. Result
 
-**Pilot Engine** is a tiny game engine used for the [GAMES104](https://games104.boomingtech.com) course.
+### 1.1 Color Grading with Default LUT
 
-## Continuous build status
+* Origin Image
+  * ![image-20240221171527475](./README/image-20240221171527475.png)
+  
+* `color_grading_LUT.jpg`
+  * ![lut0](./engine/asset/texture/lut/color_grading_LUT.jpg)
+  * ![image-20240221171232049](./README/image-20240221171232049.png)
 
-Build Type | Status
-:-: | :-:
-**Build Windows** | [![Build Windows](https://github.com/BoomingTech/Pilot/actions/workflows/build_windows.yml/badge.svg)](https://github.com/BoomingTech/Pilot/actions/workflows/build_windows.yml)
-**Build Linux** | [![Build Linux](https://github.com/BoomingTech/Pilot/actions/workflows/build_linux.yml/badge.svg)](https://github.com/BoomingTech/Pilot/actions/workflows/build_linux.yml)
-**Build macOS** | [![Build macOS](https://github.com/BoomingTech/Pilot/actions/workflows/build_macos.yml/badge.svg)](https://github.com/BoomingTech/Pilot/actions/workflows/build_macos.yml)
+* `color_grading_lut_01.png`
 
-## Prerequisites
+  * ![lut1](./engine/asset/texture/lut/color_grading_lut_01.png)
+  * ![image-20240221171445551](./README/image-20240221171445551.png)
 
-To build Pilot, you must first install the following tools.
+* `color_grading_lut_02.png`
 
-### Windows 10/11
-- Visual Studio 2019 (or more recent)
-- CMake 3.19 (or more recent)
-- Git 2.1 (or more recent)
+  * ![lut1](./engine/asset/texture/lut/color_grading_lut_02.png)
+  * ![image-20240221171609948](./README/image-20240221171609948.png)
 
-### macOS >= 10.15 (x86_64)
-- Xcode 12.3 (or more recent)
-- CMake 3.19 (or more recent)
-- Git 2.1 (or more recent)
+* `color_grading_lut_03.png`
 
-### Ubuntu 20.04
- - apt install the following packages
+  * ![lut1](./engine/asset/texture/lut/color_grading_lut_03.png)
+  * ![image-20240221171709795](./README/image-20240221171709795.png)
+
+* `color_grading_lut_04.png`
+
+  * ![lut1](./engine/asset/texture/lut/color_grading_lut_04.png)
+  * ![image-20240221171849462](./README/image-20240221171849462.png)
+
+* `color_grading_lut_05.png`
+
+  * ![lut1](./engine/asset/texture/lut/color_grading_lut_05.png)
+  * ![image-20240221171915919](./README/image-20240221171915919.png)
+
+* `color_grading_lut_06.png`
+
+  * ![lut1](./engine/asset/texture/lut/color_grading_lut_06.png)
+  * ![image-20240221171940894](./README/image-20240221171940894.png)
+
+### 1.2 Color Grading with my LUT
+
+* LUT effect is as follows
+
+  * ![image-20240221172812148](./README/image-20240221172812148.png)![image-20240221172821021](./README/image-20240221172821021.png)
+  * Hoshino is tired from work and wants to do something bad
+
+    > “红温了”
+
+* LUT
+
+  * ![yxhxianyu-lut-1x64-64x4096](./README/yxhxianyu-lut-1x64-64x4096.png)
+
+* Result
+
+  * ![image-20240221174814770](./README/image-20240221174814770.png)
+
+### 1.3 (Improvement) New Render Pass
+
+* TODO
+
+## 2. My Code
+
+```glsl
+const highp float EPS = 0.0001;
+const highp float LUT_COLOR = 16.0; // 32.0 or 64.0
+
+void main()
+{
+    highp ivec2 lut_tex_size = textureSize(color_grading_lut_texture_sampler, 0);
+    highp float _COLORS      = float(lut_tex_size.y);
+
+    highp vec4 color       = subpassLoad(in_color).rgba;
+    
+	/* Here is my answer (begin) */
+    highp float b1 = min(1.0 - EPS, color.b) * LUT_COLOR;
+
+    highp float u1 = floor(b1) / LUT_COLOR + color.r / LUT_COLOR;
+    highp float u2 = ceil(b1) / LUT_COLOR + color.r / LUT_COLOR;
+    highp float v = color.g;
+
+    highp vec4 color1 = texture(color_grading_lut_texture_sampler, vec2(u1, v));
+    highp vec4 color2 = texture(color_grading_lut_texture_sampler, vec2(u2, v));
+    highp vec4 lut_color = mix(color1, color2, b1 - floor(b1));
+	/* Here is my answer (end) */
+    
+    out_color = lut_color;
+}
 ```
-sudo apt install libxrandr-dev
-sudo apt install libxrender-dev
-sudo apt install libxinerama-dev
-sudo apt install libxcursor-dev
-sudo apt install libxi-dev
-sudo apt install libglvnd-dev
-sudo apt install libvulkan-dev
-sudo apt install cmake
-sudo apt install clang
-sudo apt install libc++-dev
-sudo apt install libglew-dev
-sudo apt install libglfw3-dev
-sudo apt install vulkan-validationlayers
-sudo apt install mesa-vulkan-drivers
-```
-- [NVIDIA driver](https://docs.nvidia.com/cuda/cuda-installation-guide-linux/index.html#runfile) (The AMD and Intel driver is open-source, and thus is installed automatically by mesa-vulkan-drivers)
 
-## Build Pilot
-
-### Build on Windows
-You may execute the **build_windows.bat**. This batch file will generate the projects, and build the **Release** config of **Pilot Engine** automatically. After successful build, you can find the PilotEditor.exe at the **bin** directory.
-
-Or you can use the following command to generate the **Visual Studio** project firstly, then open the solution in the build directory and build it manually.
-```
-cmake -S . -B build
-```
-
-### Build on macOS
-
-> The following build instructions only tested on specific hardware of x86_64, and do not support M1 chips. For M1 compatible, we will release later.
-
-To compile Pilot, you must have the most recent version of Xcode installed.
-Then run 'cmake' from the project's root directory, to generate a project of Xcode.
-
-```
-cmake -S . -B build -G "Xcode"
-```
-and you can build the project with
-```
-cmake --build build --config Release
-```
-
-Or you can execute the **build_macos.sh** to build the binaries.
-
-### Build on Ubuntu 20.04
-You can execute the **build_linux.sh** to build the binaries.
-
-### Documentation
-For documentation, please refer to the Wiki section.
