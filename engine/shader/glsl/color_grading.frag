@@ -29,16 +29,19 @@ void main()
     // b1 <=> floor(b * 16.0) / 16.0
     // b2 <=> ceil(b * 16.0 - EPS) / 16.0
 
-    highp float b1 = min(1.0 - EPS, color.b) * LUT_COLOR;
+    if (ENABLE_COLOR_GRADING) {
+        highp float b1 = min(1.0 - EPS, color.b) * LUT_COLOR;
 
-    highp float u1 = floor(b1) / LUT_COLOR + color.r / LUT_COLOR;
-    highp float u2 = ceil(b1) / LUT_COLOR + color.r / LUT_COLOR;
-    highp float v = color.g;
+        highp float u1 = floor(b1) / LUT_COLOR + color.r / LUT_COLOR;
+        highp float u2 = ceil(b1) / LUT_COLOR + color.r / LUT_COLOR;
+        highp float v = color.g;
 
-    highp vec4 color1 = texture(color_grading_lut_texture_sampler, vec2(u1, v));
-    highp vec4 color2 = texture(color_grading_lut_texture_sampler, vec2(u2, v));
-    highp vec4 lut_color = mix(color1, color2, b1 - floor(b1));
+        highp vec4 color1 = texture(color_grading_lut_texture_sampler, vec2(u1, v));
+        highp vec4 color2 = texture(color_grading_lut_texture_sampler, vec2(u2, v));
+        highp vec4 lut_color = mix(color1, color2, b1 - floor(b1));
 
-    out_color = lut_color;
-    // out_color = color;
+        out_color = lut_color;
+    } else {
+        out_color = color;
+    }
 }

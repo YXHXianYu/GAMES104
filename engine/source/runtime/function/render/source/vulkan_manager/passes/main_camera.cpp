@@ -43,11 +43,11 @@ namespace Pilot
     {
         _framebuffer.attachments.resize(_main_camera_pass_custom_attachment_count);
 
-        _framebuffer.attachments[_main_camera_pass_gbuffer_a].format          = VK_FORMAT_R8G8B8A8_UNORM;
-        _framebuffer.attachments[_main_camera_pass_gbuffer_b].format          = VK_FORMAT_R8G8B8A8_UNORM;
-        _framebuffer.attachments[_main_camera_pass_gbuffer_c].format          = VK_FORMAT_R8G8B8A8_SRGB;
-        _framebuffer.attachments[_main_camera_pass_backup_buffer_odd].format  = VK_FORMAT_R16G16B16A16_SFLOAT;
-        _framebuffer.attachments[_main_camera_pass_backup_buffer_even].format = VK_FORMAT_R16G16B16A16_SFLOAT;
+        _framebuffer.attachments[_main_camera_pass_gbuffer_a].format           = VK_FORMAT_R8G8B8A8_UNORM;
+        _framebuffer.attachments[_main_camera_pass_gbuffer_b].format           = VK_FORMAT_R8G8B8A8_UNORM;
+        _framebuffer.attachments[_main_camera_pass_gbuffer_c].format           = VK_FORMAT_R8G8B8A8_SRGB;
+        _framebuffer.attachments[_main_camera_pass_backup_buffer_odd].format   = VK_FORMAT_R16G16B16A16_SFLOAT;
+        _framebuffer.attachments[_main_camera_pass_backup_buffer_even].format  = VK_FORMAT_R16G16B16A16_SFLOAT;
 
         for (int i = 0; i < _main_camera_pass_custom_attachment_count; ++i)
         {
@@ -73,7 +73,7 @@ namespace Pilot
                                                                             VK_IMAGE_VIEW_TYPE_2D,
                                                                             1,
                                                                             1);
-        }
+        }  
     }
 
     void PMainCameraPass::setupRenderPass()

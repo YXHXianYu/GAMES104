@@ -51,6 +51,7 @@ namespace Pilot
     {
         _render_pipelines.resize(1);
 
+        // Pipeline Layout
         VkDescriptorSetLayout      descriptorset_layouts[1] = {_descriptor_infos[0].layout};
         VkPipelineLayoutCreateInfo pipeline_layout_create_info {};
         pipeline_layout_create_info.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
