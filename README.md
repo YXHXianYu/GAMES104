@@ -93,7 +93,7 @@ void main()
 
 * 给Piccolo Engine添加Bloom效果
 
-### 3.2 设计思路
+### 3.2 设计与修改思路
 
 * Render Pipeline
   * Bloom应该位于Tone Mapping之前，对HDR空间的图像进行操作
@@ -105,9 +105,36 @@ void main()
   * C为水平模糊后的图像（依赖于B）
   * D为竖直模糊后的图像（依赖于C）
   * E为Bloom最终图像（依赖于A和D）
+* 为了记录并且便于我自己的Debug，我接下来将分步骤来描述我如何实现的Bloom效果。每步修改完毕后，引擎都应该可以正常运行。
 
-#### 3.2.1 添加Buffer
+#### 3.2.1 添加并配置Buffer
 
-* 因为在处理过程中，我们总共需要使用3个缓存Buffer（2个输入与1个输出，而Piccolo只提供了2个缓存Buffer（`backup_buffer_odd` 和 `backup_buffer_even`），所以我们需要新添加一个Buffer
-* 
+* 因为在处理过程中，我们总共需要使用3个缓存Buffer（2个输入与1个输出），而Piccolo只提供了2个缓存Buffer（`backup_buffer_odd` 和 `backup_buffer_even`），所以我们需要新添加一个Buffer
 
+* 在 `vulkan_passes.h` 中进行以下修改
+
+  * line82，添加Buffer枚举量
+
+    `_main_camera_pass_backup_buffer_third = 5`
+
+* 在 `main_camera.h` 中进行以下修改
+
+  * line51，配置 Attachment Format
+  * line142~152，配置 VkAttachmentDescription
+  * line2057，配置 VkImageView
+  * line2123，配置 VkClearValue
+  * line2241，配置 VkClearValue
+
+* 成功运行！！！
+
+  * 太爽了
+
+#### 3.2.2 添加并配置Bloom Subpass
+
+* 根据ChatGPT，Vulkan中一个Subpass只能执行一次vertex shader与fragment shader，而我们的Bloom Effect需要4次Fragment Shader，所以就需要配置4个Subpass！
+  * 是的，可以化简成3次，但这样就不符合单一职责原则了
+* 4个Subpass分别为
+  * _main_camera_subpass_bloom_brightness_extracting
+  * _main_camera_subpass_bloom_horizontal_blur
+  * _main_camera_subpass_bloom_vertical_blur
+  * _main_camera_subpass_bloom_composite

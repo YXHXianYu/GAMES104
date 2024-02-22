@@ -48,6 +48,7 @@ namespace Pilot
         _framebuffer.attachments[_main_camera_pass_gbuffer_c].format           = VK_FORMAT_R8G8B8A8_SRGB;
         _framebuffer.attachments[_main_camera_pass_backup_buffer_odd].format   = VK_FORMAT_R16G16B16A16_SFLOAT;
         _framebuffer.attachments[_main_camera_pass_backup_buffer_even].format  = VK_FORMAT_R16G16B16A16_SFLOAT;
+        _framebuffer.attachments[_main_camera_pass_backup_buffer_third].format = VK_FORMAT_R16G16B16A16_SFLOAT;
 
         for (int i = 0; i < _main_camera_pass_custom_attachment_count; ++i)
         {
@@ -137,6 +138,18 @@ namespace Pilot
         backup_even_color_attachment_description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         backup_even_color_attachment_description.initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
         backup_even_color_attachment_description.finalLayout    = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        VkAttachmentDescription& backup_third_color_attachment_description =
+            attachments[_main_camera_pass_backup_buffer_third];
+        backup_third_color_attachment_description.format =
+            _framebuffer.attachments[_main_camera_pass_backup_buffer_third].format;
+        backup_third_color_attachment_description.samples        = VK_SAMPLE_COUNT_1_BIT;
+        backup_third_color_attachment_description.loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        backup_third_color_attachment_description.storeOp        = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        backup_third_color_attachment_description.stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        backup_third_color_attachment_description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        backup_third_color_attachment_description.initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
+        backup_third_color_attachment_description.finalLayout    = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkAttachmentDescription& depth_attachment_description = attachments[_main_camera_pass_depth];
         depth_attachment_description.format                   = m_p_vulkan_context->_depth_image_format;
@@ -2041,6 +2054,7 @@ namespace Pilot
                 _framebuffer.attachments[_main_camera_pass_gbuffer_c].view,
                 _framebuffer.attachments[_main_camera_pass_backup_buffer_odd].view,
                 _framebuffer.attachments[_main_camera_pass_backup_buffer_even].view,
+                _framebuffer.attachments[_main_camera_pass_backup_buffer_third].view,
                 m_p_vulkan_context->_depth_image_view,
                 m_p_vulkan_context->_swapchain_imageviews[i]};
 
@@ -2101,15 +2115,16 @@ namespace Pilot
             renderpass_begin_info.renderArea.extent = m_p_vulkan_context->_swapchain_extent;
 
             VkClearValue clear_values[_main_camera_pass_attachment_count];
-            clear_values[_main_camera_pass_gbuffer_a].color          = {{0.0f, 0.0f, 0.0f, 0.0f}};
-            clear_values[_main_camera_pass_gbuffer_b].color          = {{0.0f, 0.0f, 0.0f, 0.0f}};
-            clear_values[_main_camera_pass_gbuffer_c].color          = {{0.0f, 0.0f, 0.0f, 0.0f}};
-            clear_values[_main_camera_pass_backup_buffer_odd].color  = {{0.0f, 0.0f, 0.0f, 1.0f}};
-            clear_values[_main_camera_pass_backup_buffer_even].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
-            clear_values[_main_camera_pass_depth].depthStencil       = {1.0f, 0};
-            clear_values[_main_camera_pass_swap_chain_image].color   = {{0.0f, 0.0f, 0.0f, 1.0f}};
-            renderpass_begin_info.clearValueCount                    = (sizeof(clear_values) / sizeof(clear_values[0]));
-            renderpass_begin_info.pClearValues                       = clear_values;
+            clear_values[_main_camera_pass_gbuffer_a].color           = {{0.0f, 0.0f, 0.0f, 0.0f}};
+            clear_values[_main_camera_pass_gbuffer_b].color           = {{0.0f, 0.0f, 0.0f, 0.0f}};
+            clear_values[_main_camera_pass_gbuffer_c].color           = {{0.0f, 0.0f, 0.0f, 0.0f}};
+            clear_values[_main_camera_pass_backup_buffer_odd].color   = {{0.0f, 0.0f, 0.0f, 1.0f}};
+            clear_values[_main_camera_pass_backup_buffer_even].color  = {{0.0f, 0.0f, 0.0f, 1.0f}};
+            clear_values[_main_camera_pass_backup_buffer_third].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+            clear_values[_main_camera_pass_depth].depthStencil        = {1.0f, 0};
+            clear_values[_main_camera_pass_swap_chain_image].color    = {{0.0f, 0.0f, 0.0f, 1.0f}};
+            renderpass_begin_info.clearValueCount                     = (sizeof(clear_values) / sizeof(clear_values[0]));
+            renderpass_begin_info.pClearValues                        = clear_values;
 
             m_p_vulkan_context->_vkCmdBeginRenderPass(
                 m_command_info._current_command_buffer, &renderpass_begin_info, VK_SUBPASS_CONTENTS_INLINE);
@@ -2223,6 +2238,7 @@ namespace Pilot
             clear_values[_main_camera_pass_gbuffer_c].color          = {{0.0f, 0.0f, 0.0f, 0.0f}};
             clear_values[_main_camera_pass_backup_buffer_odd].color  = {{0.0f, 0.0f, 0.0f, 1.0f}};
             clear_values[_main_camera_pass_backup_buffer_even].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+            clear_values[_main_camera_pass_backup_buffer_third].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
             clear_values[_main_camera_pass_depth].depthStencil       = {1.0f, 0};
             clear_values[_main_camera_pass_swap_chain_image].color   = {{0.0f, 0.0f, 0.0f, 1.0f}};
             renderpass_begin_info.clearValueCount                    = (sizeof(clear_values) / sizeof(clear_values[0]));
