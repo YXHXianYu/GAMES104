@@ -23,6 +23,8 @@ void main()
     // there is no need to do gamma correction in the fragment shader
     color = vec3(pow(color.x, 1.0 / 2.2), pow(color.y, 1.0 / 2.2), pow(color.z, 1.0 / 2.2));
 
+    // out_color = vec4(1.0f, 1.0f, 0.0f, 1.0f);
+
     out_color = vec4(color, 1.0f);
 }
 

@@ -119,11 +119,11 @@ void main()
 
 * 在 `main_camera.h` 中进行以下修改
 
-  * line51，配置 Attachment Format
-  * line142~152，配置 VkAttachmentDescription
-  * line2057，配置 VkImageView
-  * line2123，配置 VkClearValue
-  * line2241，配置 VkClearValue
+  * line51，配置Attachment Format
+  * line142-152，配置VkAttachmentDescription
+  * line2057，配置VkImageView
+  * line2123，配置VkClearValue
+  * line2241，配置VkClearValue
 
 * 成功运行！！！
 
@@ -138,3 +138,39 @@ void main()
   * _main_camera_subpass_bloom_horizontal_blur
   * _main_camera_subpass_bloom_vertical_blur
   * _main_camera_subpass_bloom_composite
+* 在 `vulkan_passes.h` 中进行以下修改
+  * line94-97，添加4个枚举量
+* 在 `main_camera.h` 中进行以下修改
+  * line249-345，配置4个Subpass
+  * line349，将Tone Mapping Subpass的输入Buffer改为Bloom的输出Buffer
+  * line426，将dependencies数组的大小从7改为11
+  * line427...，将dependencies数组的计数方式改为自增，这样便于修改，但要注意下标越界问题
+  * line464-523，配置VkSubpassDependency
+  * line526，修改Tone Mapping的Dependency Subpass
+* 在 `vulkan_passes.h` 中添加BloomPass对应的4个类声明
+* 创建BloomPass对应的4个着色器
+  * 先创建着色器文件，但不做任何处理，着色器返回原始图像
+  * 便于预编译与自动补全
+  * 先预编译一遍，不然着色器头文件不会生成
+* 添加BloomPass对应的4个源文件
+  * 前三个Pass直接复制Tone Mapping的，然后修改一下着色器名称即可
+    * 太丑陋了！需要提取公共部分（TODO）
+  * 第四个Pass需要修改输入为两部分，对应修改
+* 在 `main_camera` 中添加对这四个subpass的调用
+  * `vulkan_passes.h` 的两个draw函数声明中添加对应的4个Pass
+  * `main_camera.cpp` 的两个draw函数定义中添加对应的4个Pass
+* 在 `vulkan_manager` 中对这四个subpass进行初始化
+  * `vulkan_manager.h` 中定义这四个private成员变量
+  * `vulkan_manager.cpp` 中，在两个draw函数调用处，分别添加这四个变量
+* 在 `swapchain.cpp` 中，对这四个subpass进行update
+* 在 `render_passes.cpp` 中，对这四个subpass进行initialize
+* cmake好像有bug，清空build文件夹后，修了几个语法错误，编译就过了
+  * 但是画面有问题
+  * ![image-20240223003954779](./README/image-20240223003954779.png)
+
+* Debug
+  * bug1
+    * ![image-20240223004310663](./README/image-20240223004310663.png)
+  * bug2
+    * ![image-20240223013406203](./README/image-20240223013406203.png)
+    * 应该是11

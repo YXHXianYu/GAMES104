@@ -246,9 +246,107 @@ namespace Pilot
         forward_lighting_pass.preserveAttachmentCount = 0;
         forward_lighting_pass.pPreserveAttachments    = NULL;
 
+        /* Bloom (begin) */
+        // The output of the deferred lighting pass is in the **odd** buffer.
+        // We'll keep the odd buffer unchanged until the end of the bloom pass.
+
+        // Bloom brightness extracting pass
+
+        VkAttachmentReference bloom_brightness_extracting_pass_input_attachment_reference {};
+        bloom_brightness_extracting_pass_input_attachment_reference.attachment =
+            &backup_odd_color_attachment_description - attachments;
+        bloom_brightness_extracting_pass_input_attachment_reference.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        VkAttachmentReference bloom_brightness_extracting_pass_color_attachment_reference {};
+        bloom_brightness_extracting_pass_color_attachment_reference.attachment =
+            &backup_even_color_attachment_description - attachments;
+        bloom_brightness_extracting_pass_color_attachment_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        VkSubpassDescription& bloom_brightness_extracting_pass =
+            subpasses[_main_camera_subpass_bloom_brightness_extracting];
+        bloom_brightness_extracting_pass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        bloom_brightness_extracting_pass.inputAttachmentCount = 1;
+        bloom_brightness_extracting_pass.pInputAttachments    = &bloom_brightness_extracting_pass_input_attachment_reference;
+        bloom_brightness_extracting_pass.colorAttachmentCount = 1;
+        bloom_brightness_extracting_pass.pColorAttachments    = &bloom_brightness_extracting_pass_color_attachment_reference;
+        bloom_brightness_extracting_pass.pDepthStencilAttachment = NULL;
+        bloom_brightness_extracting_pass.preserveAttachmentCount = 0;
+        bloom_brightness_extracting_pass.pPreserveAttachments    = NULL;
+
+        // Horizontal blur pass
+
+        VkAttachmentReference bloom_horizontal_blur_pass_input_attachment_reference {};
+        bloom_horizontal_blur_pass_input_attachment_reference.attachment =
+            &backup_even_color_attachment_description - attachments;
+        bloom_horizontal_blur_pass_input_attachment_reference.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        VkAttachmentReference bloom_horizontal_blur_pass_color_attachment_reference {};
+        bloom_horizontal_blur_pass_color_attachment_reference.attachment =
+            &backup_third_color_attachment_description - attachments;
+        bloom_horizontal_blur_pass_color_attachment_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        VkSubpassDescription& bloom_horizontal_blur_pass = subpasses[_main_camera_subpass_bloom_horizontal_blur];
+        bloom_horizontal_blur_pass.pipelineBindPoint     = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        bloom_horizontal_blur_pass.inputAttachmentCount  = 1;
+        bloom_horizontal_blur_pass.pInputAttachments     = &bloom_horizontal_blur_pass_input_attachment_reference;
+        bloom_horizontal_blur_pass.colorAttachmentCount  = 1;
+        bloom_horizontal_blur_pass.pColorAttachments     = &bloom_horizontal_blur_pass_color_attachment_reference;
+        bloom_horizontal_blur_pass.pDepthStencilAttachment = NULL;
+        bloom_horizontal_blur_pass.preserveAttachmentCount = 0;
+        bloom_horizontal_blur_pass.pPreserveAttachments    = NULL;
+
+        // Vertical blur pass
+
+        VkAttachmentReference bloom_vertical_blur_pass_input_attachment_reference {};
+        bloom_vertical_blur_pass_input_attachment_reference.attachment =
+            &backup_third_color_attachment_description - attachments;
+        bloom_vertical_blur_pass_input_attachment_reference.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        VkAttachmentReference bloom_vertical_blur_pass_color_attachment_reference {};
+        bloom_vertical_blur_pass_color_attachment_reference.attachment =
+            &backup_even_color_attachment_description - attachments;
+        bloom_vertical_blur_pass_color_attachment_reference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        VkSubpassDescription& bloom_vertical_blur_pass = subpasses[_main_camera_subpass_bloom_vertical_blur];
+        bloom_vertical_blur_pass.pipelineBindPoint     = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        bloom_vertical_blur_pass.inputAttachmentCount  = 1;
+        bloom_vertical_blur_pass.pInputAttachments     = &bloom_vertical_blur_pass_input_attachment_reference;
+        bloom_vertical_blur_pass.colorAttachmentCount  = 1;
+        bloom_vertical_blur_pass.pColorAttachments     = &bloom_vertical_blur_pass_color_attachment_reference;
+        bloom_vertical_blur_pass.pDepthStencilAttachment = NULL;
+        bloom_vertical_blur_pass.preserveAttachmentCount = 0;
+        bloom_vertical_blur_pass.pPreserveAttachments    = NULL;
+
+        // Bloom composite pass
+
+        VkAttachmentReference bloom_composite_pass_input_attachments_reference[2] = {}; // idx0 is origin image, idx1 is blurred image
+        bloom_composite_pass_input_attachments_reference[0].attachment =
+            &backup_odd_color_attachment_description - attachments;
+        bloom_composite_pass_input_attachments_reference[0].layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        bloom_composite_pass_input_attachments_reference[1].attachment =
+            &backup_even_color_attachment_description - attachments;
+        bloom_composite_pass_input_attachments_reference[1].layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        VkAttachmentReference bloom_composite_pass_color_attachment_reference {};
+        bloom_composite_pass_color_attachment_reference.attachment = &backup_third_color_attachment_description - attachments;
+        bloom_composite_pass_color_attachment_reference.layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        VkSubpassDescription& bloom_composite_pass = subpasses[_main_camera_subpass_bloom_composite];
+        bloom_composite_pass.pipelineBindPoint     = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        bloom_composite_pass.inputAttachmentCount  = sizeof(bloom_composite_pass_input_attachments_reference) /
+                                                     sizeof(bloom_composite_pass_input_attachments_reference[0]);
+        bloom_composite_pass.pInputAttachments     = &bloom_composite_pass_input_attachments_reference[0];
+        bloom_composite_pass.colorAttachmentCount  = 1;
+        bloom_composite_pass.pColorAttachments     = &bloom_composite_pass_color_attachment_reference;
+        bloom_composite_pass.pDepthStencilAttachment = NULL;
+        bloom_composite_pass.preserveAttachmentCount = 0;
+        bloom_composite_pass.pPreserveAttachments    = NULL;
+
+        /* Bloom (end) */
+
         VkAttachmentReference tone_mapping_pass_input_attachment_reference {};
         tone_mapping_pass_input_attachment_reference.attachment =
-            &backup_odd_color_attachment_description - attachments;
+            &backup_third_color_attachment_description - attachments; // Use the third buffer as input (by YXH_XianYu)
         tone_mapping_pass_input_attachment_reference.layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
         VkAttachmentReference tone_mapping_pass_color_attachment_reference {};
@@ -325,9 +423,10 @@ namespace Pilot
         combine_ui_pass.preserveAttachmentCount = 0;
         combine_ui_pass.pPreserveAttachments    = NULL;
 
-        VkSubpassDependency dependencies[7] = {};
+        VkSubpassDependency dependencies[11] = {};
+        uint32_t            dependency_count = 0;
 
-        VkSubpassDependency& deferred_lighting_pass_depend_on_shadow_map_pass = dependencies[0];
+        VkSubpassDependency& deferred_lighting_pass_depend_on_shadow_map_pass = dependencies[dependency_count++];
         deferred_lighting_pass_depend_on_shadow_map_pass.srcSubpass           = VK_SUBPASS_EXTERNAL;
         deferred_lighting_pass_depend_on_shadow_map_pass.dstSubpass           = _main_camera_subpass_deferred_lighting;
         deferred_lighting_pass_depend_on_shadow_map_pass.srcStageMask  = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
@@ -336,7 +435,7 @@ namespace Pilot
         deferred_lighting_pass_depend_on_shadow_map_pass.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
         deferred_lighting_pass_depend_on_shadow_map_pass.dependencyFlags = 0; // NOT BY REGION
 
-        VkSubpassDependency& deferred_lighting_pass_depend_on_base_pass = dependencies[1];
+        VkSubpassDependency& deferred_lighting_pass_depend_on_base_pass = dependencies[dependency_count++];
         deferred_lighting_pass_depend_on_base_pass.srcSubpass           = _main_camera_subpass_basepass;
         deferred_lighting_pass_depend_on_base_pass.dstSubpass           = _main_camera_subpass_deferred_lighting;
         deferred_lighting_pass_depend_on_base_pass.srcStageMask =
@@ -349,7 +448,7 @@ namespace Pilot
             VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
         deferred_lighting_pass_depend_on_base_pass.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
-        VkSubpassDependency& forward_lighting_pass_depend_on_deferred_lighting_pass = dependencies[2];
+        VkSubpassDependency& forward_lighting_pass_depend_on_deferred_lighting_pass = dependencies[dependency_count++];
         forward_lighting_pass_depend_on_deferred_lighting_pass.srcSubpass = _main_camera_subpass_deferred_lighting;
         forward_lighting_pass_depend_on_deferred_lighting_pass.dstSubpass = _main_camera_subpass_forward_lighting;
         forward_lighting_pass_depend_on_deferred_lighting_pass.srcStageMask =
@@ -362,20 +461,81 @@ namespace Pilot
             VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
         forward_lighting_pass_depend_on_deferred_lighting_pass.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
-        VkSubpassDependency& tone_mapping_pass_depend_on_lighting_pass = dependencies[3];
-        tone_mapping_pass_depend_on_lighting_pass.srcSubpass           = _main_camera_subpass_forward_lighting;
-        tone_mapping_pass_depend_on_lighting_pass.dstSubpass           = _main_camera_subpass_tone_mapping;
-        tone_mapping_pass_depend_on_lighting_pass.srcStageMask =
+        // Bloom (begin)
+        VkSubpassDependency& bloom_brightness_extracting_pass_depend_on_forward_lighting_pass =
+            dependencies[dependency_count++];
+        bloom_brightness_extracting_pass_depend_on_forward_lighting_pass.srcSubpass =
+            _main_camera_subpass_forward_lighting;
+        bloom_brightness_extracting_pass_depend_on_forward_lighting_pass.dstSubpass =
+            _main_camera_subpass_bloom_brightness_extracting;
+        bloom_brightness_extracting_pass_depend_on_forward_lighting_pass.srcStageMask =
             VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        tone_mapping_pass_depend_on_lighting_pass.dstStageMask =
+        bloom_brightness_extracting_pass_depend_on_forward_lighting_pass.dstStageMask =
             VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-        tone_mapping_pass_depend_on_lighting_pass.srcAccessMask =
+        bloom_brightness_extracting_pass_depend_on_forward_lighting_pass.srcAccessMask =
             VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-        tone_mapping_pass_depend_on_lighting_pass.dstAccessMask =
+        bloom_brightness_extracting_pass_depend_on_forward_lighting_pass.dstAccessMask =
             VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
-        tone_mapping_pass_depend_on_lighting_pass.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+        bloom_brightness_extracting_pass_depend_on_forward_lighting_pass.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
-        VkSubpassDependency& color_grading_pass_depend_on_tone_mapping_pass = dependencies[4];
+        VkSubpassDependency& bloom_horizontal_blur_pass_depend_on_brightness_extracting_pass =
+            dependencies[dependency_count++];
+        bloom_horizontal_blur_pass_depend_on_brightness_extracting_pass.srcSubpass =
+            _main_camera_subpass_bloom_brightness_extracting;
+        bloom_horizontal_blur_pass_depend_on_brightness_extracting_pass.dstSubpass =
+            _main_camera_subpass_bloom_horizontal_blur;
+        bloom_horizontal_blur_pass_depend_on_brightness_extracting_pass.srcStageMask =
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        bloom_horizontal_blur_pass_depend_on_brightness_extracting_pass.dstStageMask =
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        bloom_horizontal_blur_pass_depend_on_brightness_extracting_pass.srcAccessMask =
+            VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        bloom_horizontal_blur_pass_depend_on_brightness_extracting_pass.dstAccessMask =
+            VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+        bloom_horizontal_blur_pass_depend_on_brightness_extracting_pass.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+        VkSubpassDependency& bloom_vertical_blur_pass_depend_on_horizontal_blur_pass = dependencies[dependency_count++];
+        bloom_vertical_blur_pass_depend_on_horizontal_blur_pass.srcSubpass =
+            _main_camera_subpass_bloom_horizontal_blur;
+        bloom_vertical_blur_pass_depend_on_horizontal_blur_pass.dstSubpass = _main_camera_subpass_bloom_vertical_blur;
+        bloom_vertical_blur_pass_depend_on_horizontal_blur_pass.srcStageMask =
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        bloom_vertical_blur_pass_depend_on_horizontal_blur_pass.dstStageMask =
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        bloom_vertical_blur_pass_depend_on_horizontal_blur_pass.srcAccessMask =
+            VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        bloom_vertical_blur_pass_depend_on_horizontal_blur_pass.dstAccessMask =
+            VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+        bloom_vertical_blur_pass_depend_on_horizontal_blur_pass.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+        VkSubpassDependency& bloom_composite_pass_depend_on_vertical_blur_pass = dependencies[dependency_count++];
+        bloom_composite_pass_depend_on_vertical_blur_pass.srcSubpass = _main_camera_subpass_bloom_vertical_blur;
+        bloom_composite_pass_depend_on_vertical_blur_pass.dstSubpass = _main_camera_subpass_bloom_composite;
+        bloom_composite_pass_depend_on_vertical_blur_pass.srcStageMask =
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        bloom_composite_pass_depend_on_vertical_blur_pass.dstStageMask =
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        bloom_composite_pass_depend_on_vertical_blur_pass.srcAccessMask =
+            VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        bloom_composite_pass_depend_on_vertical_blur_pass.dstAccessMask =
+            VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+        bloom_composite_pass_depend_on_vertical_blur_pass.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+        // Bloom (end)
+
+        VkSubpassDependency& tone_mapping_pass_depend_on_bloom_composite = dependencies[dependency_count++];
+        tone_mapping_pass_depend_on_bloom_composite.srcSubpass           = _main_camera_subpass_bloom_composite; // change to bloom composite
+        tone_mapping_pass_depend_on_bloom_composite.dstSubpass           = _main_camera_subpass_tone_mapping;
+        tone_mapping_pass_depend_on_bloom_composite.srcStageMask =
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        tone_mapping_pass_depend_on_bloom_composite.dstStageMask =
+            VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        tone_mapping_pass_depend_on_bloom_composite.srcAccessMask =
+            VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        tone_mapping_pass_depend_on_bloom_composite.dstAccessMask =
+            VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+        tone_mapping_pass_depend_on_bloom_composite.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+        VkSubpassDependency& color_grading_pass_depend_on_tone_mapping_pass = dependencies[dependency_count++];
         color_grading_pass_depend_on_tone_mapping_pass.srcSubpass           = _main_camera_subpass_tone_mapping;
         color_grading_pass_depend_on_tone_mapping_pass.dstSubpass           = _main_camera_subpass_color_grading;
         color_grading_pass_depend_on_tone_mapping_pass.srcStageMask =
@@ -388,7 +548,7 @@ namespace Pilot
             VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
         color_grading_pass_depend_on_tone_mapping_pass.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
-        VkSubpassDependency& ui_pass_depend_on_color_grading_pass = dependencies[5];
+        VkSubpassDependency& ui_pass_depend_on_color_grading_pass = dependencies[dependency_count++];
         ui_pass_depend_on_color_grading_pass.srcSubpass           = _main_camera_subpass_color_grading;
         ui_pass_depend_on_color_grading_pass.dstSubpass           = _main_camera_subpass_ui;
         ui_pass_depend_on_color_grading_pass.srcStageMask =
@@ -401,7 +561,7 @@ namespace Pilot
             VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
         ui_pass_depend_on_color_grading_pass.dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
 
-        VkSubpassDependency& combine_ui_pass_depend_on_ui_pass = dependencies[6];
+        VkSubpassDependency& combine_ui_pass_depend_on_ui_pass = dependencies[dependency_count++];
         combine_ui_pass_depend_on_ui_pass.srcSubpass           = _main_camera_subpass_ui;
         combine_ui_pass_depend_on_ui_pass.dstSubpass           = _main_camera_subpass_combine_ui;
         combine_ui_pass_depend_on_ui_pass.srcStageMask =
@@ -2101,6 +2261,10 @@ namespace Pilot
 
     void PMainCameraPass::draw(PColorGradingPass& color_grading_pass,
                                PToneMappingPass&  tone_mapping_pass,
+                               PBloomBrightnessExtractingPass& bloom_brightness_extracting_pass,
+                               PBloomHorizontalBlurPass&        bloom_horizontal_blur_pass,
+                               PBloomVerticalBlurPass&          bloom_vertical_blur_pass,
+                               PBloomCompositePass&             bloom_composite_pass,
                                PUIPass&           ui_pass,
                                PCombineUIPass&    combine_ui_pass,
                                uint32_t           current_swapchain_image_index,
@@ -2178,6 +2342,26 @@ namespace Pilot
 
         m_p_vulkan_context->_vkCmdNextSubpass(m_command_info._current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
 
+        // Bloom (begin)
+
+        bloom_brightness_extracting_pass.draw();
+
+        m_p_vulkan_context->_vkCmdNextSubpass(m_command_info._current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+
+        bloom_horizontal_blur_pass.draw();
+
+        m_p_vulkan_context->_vkCmdNextSubpass(m_command_info._current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+
+        bloom_vertical_blur_pass.draw();
+
+        m_p_vulkan_context->_vkCmdNextSubpass(m_command_info._current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+
+        bloom_composite_pass.draw();
+
+        m_p_vulkan_context->_vkCmdNextSubpass(m_command_info._current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+
+        // Bloom (end)
+
         tone_mapping_pass.draw();
 
         m_p_vulkan_context->_vkCmdNextSubpass(m_command_info._current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
@@ -2219,6 +2403,10 @@ namespace Pilot
 
     void PMainCameraPass::drawForward(PColorGradingPass& color_grading_pass,
                                       PToneMappingPass&  tone_mapping_pass,
+                                      PBloomBrightnessExtractingPass&  bloom_brightness_extracting_pass,
+                                      PBloomHorizontalBlurPass&        bloom_horizontal_blur_pass,
+                                      PBloomVerticalBlurPass&          bloom_vertical_blur_pass,
+                                      PBloomCompositePass&             bloom_composite_pass,
                                       PUIPass&           ui_pass,
                                       PCombineUIPass&    combine_ui_pass,
                                       uint32_t           current_swapchain_image_index,
@@ -2269,6 +2457,26 @@ namespace Pilot
         }
 
         m_p_vulkan_context->_vkCmdNextSubpass(m_command_info._current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+
+        // Bloom (begin)
+
+        bloom_brightness_extracting_pass.draw();
+
+        m_p_vulkan_context->_vkCmdNextSubpass(m_command_info._current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+
+        bloom_horizontal_blur_pass.draw();
+
+        m_p_vulkan_context->_vkCmdNextSubpass(m_command_info._current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+
+        bloom_vertical_blur_pass.draw();
+
+        m_p_vulkan_context->_vkCmdNextSubpass(m_command_info._current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+
+        bloom_composite_pass.draw();
+
+        m_p_vulkan_context->_vkCmdNextSubpass(m_command_info._current_command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+
+        // Bloom (end)
 
         tone_mapping_pass.draw();
 

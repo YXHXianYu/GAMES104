@@ -13,7 +13,64 @@ namespace Pilot
         VkImageView directional_light_shadow_color_image_view;
     };
 
-    class PColorGradingPass : public PRenderPassBase
+    // Bloom (begin)
+    class PBloomBrightnessExtractingPass : public PRenderPassBase
+    {
+    public:
+        void initialize(VkRenderPass render_pass, VkImageView input_attachment);
+        void draw();
+
+        void updateAfterFramebufferRecreate(VkImageView input_attachment);
+    
+    private:
+        void setupDescriptorSetLayout();
+        void setupPipelines();
+        void setupDescriptorSet();
+    };
+
+    class PBloomHorizontalBlurPass : public PRenderPassBase
+    {
+    public:
+        void initialize(VkRenderPass render_pass, VkImageView input_attachment);
+        void draw();
+
+        void updateAfterFramebufferRecreate(VkImageView input_attachment);
+    
+    private:
+        void setupDescriptorSetLayout();
+        void setupPipelines();
+        void setupDescriptorSet();
+    };
+
+    class PBloomVerticalBlurPass : public PRenderPassBase
+    {
+    public:
+        void initialize(VkRenderPass render_pass, VkImageView input_attachment);
+        void draw();
+
+        void updateAfterFramebufferRecreate(VkImageView input_attachment);
+    
+    private:
+        void setupDescriptorSetLayout();
+        void setupPipelines();
+        void setupDescriptorSet();
+    };
+
+    class PBloomCompositePass : public PRenderPassBase
+    {
+    public:
+        void initialize(VkRenderPass render_pass, VkImageView origin_input_attachment, VkImageView blur_input_attachment);
+        void draw();
+
+        void updateAfterFramebufferRecreate(VkImageView origin_input_attachment, VkImageView blur_input_attachment);
+    
+    private:
+        void setupDescriptorSetLayout();
+        void setupPipelines();
+        void setupDescriptorSet();
+    };
+
+    class PToneMappingPass : public PRenderPassBase
     {
     public:
         void initialize(VkRenderPass render_pass, VkImageView input_attachment);
@@ -27,7 +84,8 @@ namespace Pilot
         void setupDescriptorSet();
     };
 
-    class PToneMappingPass : public PRenderPassBase
+
+    class PColorGradingPass : public PRenderPassBase
     {
     public:
         void initialize(VkRenderPass render_pass, VkImageView input_attachment);
@@ -91,6 +149,10 @@ namespace Pilot
         _main_camera_subpass_basepass = 0,
         _main_camera_subpass_deferred_lighting,
         _main_camera_subpass_forward_lighting,
+        _main_camera_subpass_bloom_brightness_extracting,
+        _main_camera_subpass_bloom_horizontal_blur,
+        _main_camera_subpass_bloom_vertical_blur,
+        _main_camera_subpass_bloom_composite,
         _main_camera_subpass_tone_mapping,
         _main_camera_subpass_color_grading,
         _main_camera_subpass_ui,
@@ -139,6 +201,10 @@ namespace Pilot
 
         void draw(PColorGradingPass& color_grading_pass,
                   PToneMappingPass&  tone_mapping_pass,
+                  PBloomBrightnessExtractingPass& bloom_brightness_extracting_pass,
+                  PBloomHorizontalBlurPass&       bloom_horizontal_blur_pass,
+                  PBloomVerticalBlurPass&         bloom_vertical_blur_pass,
+                  PBloomCompositePass&            bloom_composite_pass,
                   PUIPass&           ui_pass,
                   PCombineUIPass&    combine_ui_pass,
                   uint32_t           current_swapchain_image_index,
@@ -147,6 +213,10 @@ namespace Pilot
         // legacy
         void drawForward(PColorGradingPass& color_grading_pass,
                          PToneMappingPass&  tone_mapping_pass,
+                         PBloomBrightnessExtractingPass& bloom_brightness_extracting_pass,
+                         PBloomHorizontalBlurPass&       bloom_horizontal_blur_pass,
+                         PBloomVerticalBlurPass&         bloom_vertical_blur_pass,
+                         PBloomCompositePass&            bloom_composite_pass,
                          PUIPass&           ui_pass,
                          PCombineUIPass&    combine_ui_pass,
                          uint32_t           current_swapchain_image_index,

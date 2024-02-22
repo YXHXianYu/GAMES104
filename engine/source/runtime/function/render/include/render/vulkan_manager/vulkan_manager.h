@@ -114,14 +114,18 @@ namespace Pilot
         // global rendering resource, include IBL data, global storage buffer
         PGlobalRenderResource m_global_render_resource;
         // include lighting, shadow, post process, mouse picking pass
-        PDirectionalLightShadowPass m_directional_light_shadow_pass;
-        PPointLightShadowPass       m_point_light_shadow_pass;
-        PMainCameraPass             m_main_camera_pass;
-        PColorGradingPass           m_color_grading_pass;
-        PToneMappingPass            m_tone_mapping_pass;
-        PUIPass                     m_ui_pass;
-        PCombineUIPass              m_combine_ui_pass;
-        PPickPass                   m_mouse_pick_pass;
+        PDirectionalLightShadowPass    m_directional_light_shadow_pass;
+        PPointLightShadowPass          m_point_light_shadow_pass;
+        PMainCameraPass                m_main_camera_pass;
+        PColorGradingPass              m_color_grading_pass;
+        PToneMappingPass               m_tone_mapping_pass;
+        PBloomBrightnessExtractingPass m_bloom_brightness_extracting_pass;
+        PBloomHorizontalBlurPass       m_bloom_horizontal_blur_pass;
+        PBloomVerticalBlurPass         m_bloom_vertical_blur_pass;
+        PBloomCompositePass            m_bloom_composite_pass;
+        PUIPass                        m_ui_pass;
+        PCombineUIPass                 m_combine_ui_pass;
+        PPickPass                      m_mouse_pick_pass;
 
         static uint32_t const m_max_frames_in_flight = 3;
         uint32_t              m_current_frame_index  = 0;
