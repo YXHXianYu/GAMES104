@@ -252,6 +252,8 @@ namespace Pilot
 
         // Bloom brightness extracting pass
 
+        uint32_t bloom_pass_preserve_attachment = &backup_odd_color_attachment_description - attachments;
+
         VkAttachmentReference bloom_brightness_extracting_pass_input_attachment_reference {};
         bloom_brightness_extracting_pass_input_attachment_reference.attachment =
             &backup_odd_color_attachment_description - attachments;
@@ -292,8 +294,8 @@ namespace Pilot
         bloom_horizontal_blur_pass.colorAttachmentCount  = 1;
         bloom_horizontal_blur_pass.pColorAttachments     = &bloom_horizontal_blur_pass_color_attachment_reference;
         bloom_horizontal_blur_pass.pDepthStencilAttachment = NULL;
-        bloom_horizontal_blur_pass.preserveAttachmentCount = 0;
-        bloom_horizontal_blur_pass.pPreserveAttachments    = NULL;
+        bloom_horizontal_blur_pass.preserveAttachmentCount = 1;
+        bloom_horizontal_blur_pass.pPreserveAttachments    = &bloom_pass_preserve_attachment;
 
         // Vertical blur pass
 
@@ -314,8 +316,8 @@ namespace Pilot
         bloom_vertical_blur_pass.colorAttachmentCount  = 1;
         bloom_vertical_blur_pass.pColorAttachments     = &bloom_vertical_blur_pass_color_attachment_reference;
         bloom_vertical_blur_pass.pDepthStencilAttachment = NULL;
-        bloom_vertical_blur_pass.preserveAttachmentCount = 0;
-        bloom_vertical_blur_pass.pPreserveAttachments    = NULL;
+        bloom_vertical_blur_pass.preserveAttachmentCount = 1;
+        bloom_vertical_blur_pass.pPreserveAttachments    = &bloom_pass_preserve_attachment;
 
         // Bloom composite pass
 
@@ -2261,7 +2263,7 @@ namespace Pilot
 
     void PMainCameraPass::draw(PColorGradingPass& color_grading_pass,
                                PToneMappingPass&  tone_mapping_pass,
-                               PBloomBrightnessExtractingPass& bloom_brightness_extracting_pass,
+                               PBloomBrightnessExtractingPass&  bloom_brightness_extracting_pass,
                                PBloomHorizontalBlurPass&        bloom_horizontal_blur_pass,
                                PBloomVerticalBlurPass&          bloom_vertical_blur_pass,
                                PBloomCompositePass&             bloom_composite_pass,

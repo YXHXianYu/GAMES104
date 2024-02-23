@@ -4,6 +4,8 @@
 
 #include "constants.h"
 
+#define ENABLE_COLOR_GRADING false
+
 layout(input_attachment_index = 0, set = 0, binding = 0) uniform highp subpassInput in_color;
 
 layout(set = 0, binding = 1) uniform sampler2D color_grading_lut_texture_sampler;

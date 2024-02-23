@@ -12,7 +12,8 @@ layout(location = 0) out highp vec4 out_color;
 
 void main()
 {
-    highp vec3 color = subpassLoad(in_origin_color).rgb;
+    highp vec3 origin_color = subpassLoad(in_origin_color).rgb;
+    highp vec3 blur_color = subpassLoad(in_blur_color).rgb;
 
-    out_color = vec4(color, 1.0f);
+    out_color = vec4(origin_color + blur_color, 1.0);
 }

@@ -9,7 +9,9 @@
 
 namespace Pilot
 {
-    void PBloomCompositePass::initialize(VkRenderPass render_pass, VkImageView origin_input_attachment, VkImageView blur_input_attachment)
+    void PBloomCompositePass::initialize(VkRenderPass render_pass,
+                                         VkImageView origin_input_attachment,
+                                         VkImageView blur_input_attachment)
     {
         _framebuffer.render_pass = render_pass;
         setupDescriptorSetLayout();
@@ -22,14 +24,21 @@ namespace Pilot
     {
         _descriptor_infos.resize(1);
 
-        VkDescriptorSetLayoutBinding post_process_global_layout_bindings[1] = {};
+        VkDescriptorSetLayoutBinding post_process_global_layout_bindings[2] = {};
 
-        VkDescriptorSetLayoutBinding& post_process_global_layout_input_attachment_binding =
+        VkDescriptorSetLayoutBinding& global_layout_scene_input_attachment_binding =
             post_process_global_layout_bindings[0];
-        post_process_global_layout_input_attachment_binding.binding         = 0;
-        post_process_global_layout_input_attachment_binding.descriptorType  = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
-        post_process_global_layout_input_attachment_binding.descriptorCount = 1;
-        post_process_global_layout_input_attachment_binding.stageFlags      = VK_SHADER_STAGE_FRAGMENT_BIT;
+        global_layout_scene_input_attachment_binding.binding         = 0;
+        global_layout_scene_input_attachment_binding.descriptorType  = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+        global_layout_scene_input_attachment_binding.descriptorCount = 1;
+        global_layout_scene_input_attachment_binding.stageFlags      = VK_SHADER_STAGE_FRAGMENT_BIT;
+
+        VkDescriptorSetLayoutBinding& global_layout_normal_input_attachment_binding =
+            post_process_global_layout_bindings[1];
+        global_layout_normal_input_attachment_binding.binding         = 1;
+        global_layout_normal_input_attachment_binding.descriptorType  = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+        global_layout_normal_input_attachment_binding.descriptorCount = 1;
+        global_layout_normal_input_attachment_binding.stageFlags      = VK_SHADER_STAGE_FRAGMENT_BIT;
 
         VkDescriptorSetLayoutCreateInfo post_process_global_layout_create_info;
         post_process_global_layout_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
@@ -44,7 +53,7 @@ namespace Pilot
                                                       NULL,
                                                       &_descriptor_infos[0].layout))
         {
-            throw std::runtime_error("create post process global layout");
+            throw std::runtime_error("create combine ui global layout");
         }
     }
     void PBloomCompositePass::setupPipelines()
