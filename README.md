@@ -180,5 +180,16 @@ void main()
 * bug3
   * ![image-20240223131944796](./README/image-20240223131944796.png)
   * 应该是third
+* 又找了几个小时，终于！！！！！
+* bug4
+  * ![image-20240223145151541](./README/image-20240223145151541.png)
+* 目前预览图
+  * ![image-20240223145854764](./README/image-20240223145854764.png)
+
+#### 3.2.3 添加并配置Texture
+
+* 突然发现，在GLSL中，subpassInput无法进行临近点采样，那么就无法实现高斯模糊！
+  * 糟糕，那我们就必须将subpassInput转换成sampler2D！
+  * ![image-20240223150120201](./README/image-20240223150120201.png)
 * 
 
