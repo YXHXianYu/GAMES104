@@ -125,6 +125,8 @@ void main()
   * line2123，配置VkClearValue
   * line2241，配置VkClearValue
 
+* 在 `descritor_pool.cpp` 中添加
+
 * 成功运行！！！
 
   * 太爽了
@@ -142,6 +144,7 @@ void main()
   * line94-97，添加4个枚举量
 * 在 `main_camera.h` 中进行以下修改
   * line249-345，配置4个Subpass
+  * 添加一个preserveAttachment
   * line349，将Tone Mapping Subpass的输入Buffer改为Bloom的输出Buffer
   * line426，将dependencies数组的大小从7改为11
   * line427...，将dependencies数组的计数方式改为自增，这样便于修改，但要注意下标越界问题
@@ -190,6 +193,17 @@ void main()
 
 * 突然发现，在GLSL中，subpassInput无法进行临近点采样，那么就无法实现高斯模糊！
   * 糟糕，那我们就必须将subpassInput转换成sampler2D！
-  * ![image-20240223150120201](./README/image-20240223150120201.png)
-* 
+  * ![ ](./README/image-20240223150120201.png)
+* 结束了，必须添加一个新的render pass，并且把原来的main camera render pass拆成两个render pass。
+  * 踩vulkan坑了
+  * ![image-20240224110826145](./README/image-20240224110826145.png)
+
+* 考虑了目前的时间，感觉不宜在入门时花费太多时间，所以决定先实现这个半成品Bloom效果TAT
+
+### 3.3 Result
+
+* 半成品Bloom
+* ![image-20240224111214397](./README/image-20240224111214397.png)
+* ![image-20240224111226073](./README/image-20240224111226073.png)
+* ![image-20240224111243797](./README/image-20240224111243797.png)
 
