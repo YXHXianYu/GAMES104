@@ -7,6 +7,9 @@ CPM_*.cmake
 *.patch
 !engine/3rdparty/JoltPhysics/Build
 
+# CCLS
+.ccls-cache/
+
 # Visual Studio
 CMakeSettings.json
 
