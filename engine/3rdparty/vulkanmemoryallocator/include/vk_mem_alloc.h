@@ -2569,6 +2569,7 @@ VMA_CALL_PRE void VMA_CALL_POST vmaFreeStatsString(
 #include <cstdlib>
 #include <cstring>
 #include <utility>
+#include <cstdio>
 
 #ifdef _MSC_VER
     #include <intrin.h> // For functions like __popcnt, _BitScanForward etc.
