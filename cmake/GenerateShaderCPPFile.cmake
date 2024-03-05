@@ -26,7 +26,7 @@ function(embed_resource resource_file_name source_file_name variable_name)
 
         string(REGEX REPLACE ", $" "" content "${content}")
 
-        set(array_definition "static const std::vector<unsigned char> ${variable_name} =\n{\n${content}, 0x00, 0x00, 0x00, 0x00\n};")
+        set(array_definition "static const std::vector<unsigned char> ${variable_name} =\n{\n${content}\n};")
         
         get_filename_component(file_name ${source_file_name} NAME)
         set(source "/**\n * @file ${file_name}\n * @brief Auto generated file.\n */\n#include <vector>\n${array_definition}\n")
