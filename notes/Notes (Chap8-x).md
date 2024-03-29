@@ -122,6 +122,11 @@
       * 即为旋转四元数的Inverse
 
 ### 8.5 Joint Pose
+Joint Pose的姿态
+
+* Position
+* Scale
 
 ## 9. Advanced Animation Technology
+
 
