@@ -121,6 +121,7 @@
     * 反向旋转
       * 即为旋转四元数的Inverse
 
-  ### 8.5 Joint Pose
+### 8.5 Joint Pose
 
-  * 
+## 9. Advanced Animation Technology
+
